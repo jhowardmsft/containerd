@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"sort"
 	"sync"
 	"time"
 
@@ -308,7 +307,7 @@ func (s *Supervisor) restore() error {
 		if len(exitedProcesses) > 0 {
 			// sort processes so that init is fired last because that is how the kernel sends the
 			// exit events
-			sort.Sort(&processSorter{exitedProcesses})
+			sortProcesses(exitedProcesses)
 			for _, p := range exitedProcesses {
 				e := &ExitTask{
 					Process: p,
@@ -318,20 +317,4 @@ func (s *Supervisor) restore() error {
 		}
 	}
 	return nil
-}
-
-type processSorter struct {
-	processes []runtime.Process
-}
-
-func (s *processSorter) Len() int {
-	return len(s.processes)
-}
-
-func (s *processSorter) Swap(i, j int) {
-	s.processes[i], s.processes[j] = s.processes[j], s.processes[i]
-}
-
-func (s *processSorter) Less(i, j int) bool {
-	return s.processes[j].ID() == "init"
 }
