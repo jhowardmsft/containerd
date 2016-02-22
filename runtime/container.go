@@ -47,6 +47,8 @@ type Container interface {
 	Pids() ([]int, error)
 	// Stats returns realtime container stats and resource information
 	Stats() (*Stat, error)
+	// Name or path of the OCI compliant runtime used to execute the container
+	Runtime() string
 	// OOM signals the channel if the container received an OOM notification
 	// OOM() (<-chan struct{}, error)
 }
@@ -73,13 +75,14 @@ func NewStdio(stdin, stdout, stderr string) Stdio {
 }
 
 // New returns a new container
-func New(root, id, bundle string, labels []string) (Container, error) {
+func New(root, id, bundle, runtimeName string, labels []string) (Container, error) {
 	c := &container{
 		root:      root,
 		id:        id,
 		bundle:    bundle,
 		labels:    labels,
 		processes: make(map[string]*process),
+		runtime:   runtimeName,
 	}
 	if err := os.Mkdir(filepath.Join(root, id), 0755); err != nil {
 		return nil, err
@@ -90,8 +93,9 @@ func New(root, id, bundle string, labels []string) (Container, error) {
 	}
 	defer f.Close()
 	if err := json.NewEncoder(f).Encode(state{
-		Bundle: bundle,
-		Labels: labels,
+		Bundle:  bundle,
+		Labels:  labels,
+		Runtime: runtimeName,
 	}); err != nil {
 		return nil, err
 	}
@@ -113,6 +117,7 @@ func Load(root, id string) (Container, error) {
 		id:        id,
 		bundle:    s.Bundle,
 		labels:    s.Labels,
+		runtime:   s.Runtime,
 		processes: make(map[string]*process),
 	}
 	dirs, err := ioutil.ReadDir(filepath.Join(root, id))
@@ -156,6 +161,7 @@ type container struct {
 	root      string
 	id        string
 	bundle    string
+	runtime   string
 	processes map[string]*process
 	stdio     Stdio
 	labels    []string
@@ -179,7 +185,7 @@ func (c *container) Start(checkpoint string, s Stdio) (Process, error) {
 		return nil, err
 	}
 	cmd := exec.Command("containerd-shim",
-		c.id, c.bundle,
+		c.id, c.bundle, c.runtime,
 	)
 	cmd.Dir = processRoot
 	cmd.SysProcAttr = &syscall.SysProcAttr{
@@ -218,7 +224,7 @@ func (c *container) Exec(pid string, spec specs.Process, s Stdio) (Process, erro
 		return nil, err
 	}
 	cmd := exec.Command("containerd-shim",
-		c.id, c.bundle,
+		c.id, c.bundle, c.runtime,
 	)
 	cmd.Dir = processRoot
 	cmd.SysProcAttr = &syscall.SysProcAttr{
@@ -260,13 +266,14 @@ func (c *container) readSpec() (*specs.LinuxSpec, error) {
 }
 
 func (c *container) Pause() error {
-	return exec.Command("runc", "pause", c.id).Run()
+	return exec.Command(c.runtime, "pause", c.id).Run()
 }
 
 func (c *container) Resume() error {
-	return exec.Command("runc", "resume", c.id).Run()
+	return exec.Command(c.runtime, "resume", c.id).Run()
 }
 
+// TODO: needs to be read from runtime state or signal the init pid
 func (c *container) State() State {
 	return Running
 }
@@ -350,7 +357,7 @@ func (c *container) Checkpoint(cpt Checkpoint) error {
 		add("--ext-unix-sk")
 	}
 	add(c.id)
-	return exec.Command("runc", args...).Run()
+	return exec.Command(c.runtime, args...).Run()
 }
 
 func (c *container) DeleteCheckpoint(name string) error {
@@ -379,6 +386,10 @@ func (c *container) Stats() (*Stat, error) {
 		Timestamp: now,
 		Data:      stats,
 	}, nil
+}
+
+func (c *container) Runtime() string {
+	return c.runtime
 }
 
 func (c *container) getLibctContainer() (libcontainer.Container, error) {

@@ -20,7 +20,7 @@ func setupLogger() {
 	logrus.SetOutput(f)
 }
 
-// containerd-shim is a small shim that sits in front of a runc implementation
+// containerd-shim is a small shim that sits in front of a runtime implementation
 // that allows it to be repartented to init and handle reattach from the caller.
 //
 // the cwd of the shim should be the bundle for the container.  Arg1 should be the path
@@ -28,7 +28,7 @@ func setupLogger() {
 func main() {
 	flag.Parse()
 	// start handling signals as soon as possible so that things are properly reaped
-	// or if runc exits before we hit the handler
+	// or if runtime exits before we hit the handler
 	signals := make(chan os.Signal, 2048)
 	signal.Notify(signals)
 	// set the shim as the subreaper for all orphaned processes created by the container
@@ -46,7 +46,7 @@ func main() {
 		logrus.WithField("error", err).Fatal("shim: open control pipe")
 	}
 	defer control.Close()
-	p, err := newProcess(flag.Arg(0), flag.Arg(1))
+	p, err := newProcess(flag.Arg(0), flag.Arg(1), flag.Arg(2))
 	if err != nil {
 		logrus.WithField("error", err).Fatal("shim: create new process")
 	}
@@ -87,13 +87,13 @@ func main() {
 				logrus.WithField("error", err).Error("shim: reaping child processes")
 			}
 			for _, e := range exits {
-				// check to see if runc is one of the processes that has exited
+				// check to see if runtime is one of the processes that has exited
 				if e.Pid == p.pid() {
 					exitShim = true
 					logrus.WithFields(logrus.Fields{
 						"pid":    e.Pid,
 						"status": e.Status,
-					}).Info("shim: runc exited")
+					}).Info("shim: runtime exited")
 					if err := writeInt("exitStatus", e.Status); err != nil {
 						logrus.WithFields(logrus.Fields{
 							"error":  err,
@@ -103,13 +103,13 @@ func main() {
 				}
 			}
 		}
-		// runc has exited so the shim can also exit
+		// runtime has exited so the shim can also exit
 		if exitShim {
 			if err := p.Close(); err != nil {
 				logrus.WithField("error", err).Error("shim: close stdio")
 			}
 			if err := p.delete(); err != nil {
-				logrus.WithField("error", err).Error("shim: delete runc state")
+				logrus.WithField("error", err).Error("shim: delete runtime state")
 			}
 			return
 		}

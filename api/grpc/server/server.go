@@ -236,6 +236,7 @@ func createAPIContainer(c runtime.Container, getPids bool) (*types.Container, er
 		Labels:     c.Labels(),
 		Status:     string(c.State()),
 		Pids:       toUint32(pids),
+		Runtime:    c.Runtime(),
 	}, nil
 }
 

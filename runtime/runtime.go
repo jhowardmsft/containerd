@@ -36,11 +36,12 @@ const (
 )
 
 type state struct {
-	Bundle string   `json:"bundle"`
-	Labels []string `json:"labels"`
-	Stdin  string   `json:"stdin"`
-	Stdout string   `json:"stdout"`
-	Stderr string   `json:"stderr"`
+	Bundle  string   `json:"bundle"`
+	Labels  []string `json:"labels"`
+	Stdin   string   `json:"stdin"`
+	Stdout  string   `json:"stdout"`
+	Stderr  string   `json:"stderr"`
+	Runtime string   `json:"runtime"`
 }
 
 type ProcessState struct {

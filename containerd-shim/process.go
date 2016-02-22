@@ -25,12 +25,14 @@ type process struct {
 	console      libcontainer.Console
 	consolePath  string
 	state        *runtime.ProcessState
+	runtime      string
 }
 
-func newProcess(id, bundle string) (*process, error) {
+func newProcess(id, bundle, runtimeName string) (*process, error) {
 	p := &process{
-		id:     id,
-		bundle: bundle,
+		id:      id,
+		bundle:  bundle,
+		runtime: runtimeName,
 	}
 	s, err := loadProcess()
 	if err != nil {
@@ -114,7 +116,7 @@ func (p *process) start() error {
 		"--pid-file", filepath.Join(cwd, "pid"),
 		p.id,
 	)
-	cmd := exec.Command("runc", args...)
+	cmd := exec.Command(p.runtime, args...)
 	cmd.Dir = p.bundle
 	cmd.Stdin = p.stdio.stdin
 	cmd.Stdout = p.stdio.stdout
@@ -146,7 +148,7 @@ func (p *process) pid() int {
 
 func (p *process) delete() error {
 	if !p.state.Exec {
-		return exec.Command("runc", "delete", p.id).Run()
+		return exec.Command(p.runtime, "delete", p.id).Run()
 	}
 	return nil
 }
