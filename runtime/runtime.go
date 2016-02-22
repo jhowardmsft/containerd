@@ -32,6 +32,7 @@ type State string
 
 const (
 	Paused  = State("paused")
+	Stopped = State("stopped")
 	Running = State("running")
 )
 

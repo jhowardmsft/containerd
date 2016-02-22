@@ -273,8 +273,16 @@ func (c *container) Resume() error {
 	return exec.Command(c.runtime, "resume", c.id).Run()
 }
 
-// TODO: needs to be read from runtime state or signal the init pid
+// TODO: get paused state from runtime
 func (c *container) State() State {
+	proc := c.processes["init"]
+	if proc == nil || proc.pid == 0 {
+		return Stopped
+	}
+	err := syscall.Kill(proc.pid, 0)
+	if err != nil && err == syscall.ESRCH {
+		return Stopped
+	}
 	return Running
 }
 
