@@ -16,7 +16,9 @@ var (
 	ErrTerminalsNotSupported = errors.New("containerd: terminals are not supported for runtime")
 	ErrProcessNotExited      = errors.New("containerd: process has not exited")
 	ErrProcessExited         = errors.New("containerd: process has exited")
+	ErrContainerNotStarted   = errors.New("containerd: container not started")
 
+	errNoPidFile      = errors.New("containerd: no process pid file found")
 	errNotImplemented = errors.New("containerd: not implemented")
 )
 

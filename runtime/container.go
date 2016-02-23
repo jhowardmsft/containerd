@@ -206,13 +206,16 @@ func (c *container) Start(checkpoint string, s Stdio) (Process, error) {
 	}
 	p, err := newProcess(config)
 	if err != nil {
+		p.Close()
 		return nil, err
 	}
 	if err := cmd.Start(); err != nil {
+		p.Close()
 		return nil, err
 	}
-	if _, err := p.getPid(); err != nil {
-		return p, nil
+	if err := waitForStart(p, cmd); err != nil {
+		p.Close()
+		return nil, err
 	}
 	c.processes[InitProcessID] = p
 	return p, nil
@@ -243,10 +246,12 @@ func (c *container) Exec(pid string, spec specs.Process, s Stdio) (Process, erro
 		return nil, err
 	}
 	if err := cmd.Start(); err != nil {
+		p.Close()
 		return nil, err
 	}
-	if _, err := p.getPid(); err != nil {
-		return p, nil
+	if err := waitForStart(p, cmd); err != nil {
+		p.Close()
+		return nil, err
 	}
 	c.processes[pid] = p
 	return p, nil
@@ -434,4 +439,35 @@ func hostIDFromMap(id uint32, mp []specs.IDMapping) int {
 		}
 	}
 	return 0
+}
+
+func waitForStart(p *process, cmd *exec.Cmd) error {
+	for i := 0; i < 50; i++ {
+		if _, err := p.getPidFromFile(); err != nil {
+			if os.IsNotExist(err) {
+				alive, err := isAlive(cmd)
+				if err != nil {
+					return err
+				}
+				if !alive {
+					return ErrContainerNotStarted
+				}
+				time.Sleep(100 * time.Millisecond)
+				continue
+			}
+			return err
+		}
+		return nil
+	}
+	return errNoPidFile
+}
+
+func isAlive(cmd *exec.Cmd) (bool, error) {
+	if err := syscall.Kill(cmd.Process.Pid, 0); err != nil {
+		if err == syscall.ESRCH {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }

@@ -12,12 +12,15 @@ import (
 	"github.com/docker/docker/pkg/term"
 )
 
+var runtimeLog string
+
 func setupLogger() {
 	f, err := os.OpenFile("/tmp/shim.log", os.O_CREATE|os.O_RDWR|os.O_APPEND, 0755)
 	if err != nil {
 		panic(err)
 	}
 	logrus.SetOutput(f)
+	runtimeLog = "/tmp/runtime.log"
 }
 
 // containerd-shim is a small shim that sits in front of a runtime implementation
@@ -27,7 +30,6 @@ func setupLogger() {
 // to the state directory where the shim can locate fifos and other information.
 func main() {
 	flag.Parse()
-	setupLogger()
 	// start handling signals as soon as possible so that things are properly reaped
 	// or if runtime exits before we hit the handler
 	signals := make(chan os.Signal, 2048)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -83,7 +84,7 @@ func (p *process) start() error {
 	if err != nil {
 		return err
 	}
-	args := []string{}
+	args := []string{"--log", runtimeLog}
 	if p.state.Exec {
 		args = append(args, "exec",
 			"--process", filepath.Join(cwd, "process.json"),
@@ -148,7 +149,10 @@ func (p *process) pid() int {
 
 func (p *process) delete() error {
 	if !p.state.Exec {
-		return exec.Command(p.runtime, "delete", p.id).Run()
+		out, err := exec.Command(p.runtime, "delete", p.id).CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("%s: %v", out, err)
+		}
 	}
 	return nil
 }
