@@ -7,7 +7,7 @@ func getRootIDs(s *platformSpec) (int, int, error) {
 		return 0, 0, nil
 	}
 	var hasUserns bool
-	for _, ns := range s.Spec.Linux.Namespaces {
+	for _, ns := range s.Linux.Namespaces {
 		if ns.Type == specs.UserNamespace {
 			hasUserns = true
 			break
@@ -16,7 +16,7 @@ func getRootIDs(s *platformSpec) (int, int, error) {
 	if !hasUserns {
 		return 0, 0, nil
 	}
-	uid := hostIDFromMap(0, s.Spec.Linux.UIDMappings)
-	gid := hostIDFromMap(0, s.Spec.Linux.GIDMappings)
+	uid := hostIDFromMap(0, s.Linux.UIDMappings)
+	gid := hostIDFromMap(0, s.Linux.GIDMappings)
 	return uid, gid, nil
 }
