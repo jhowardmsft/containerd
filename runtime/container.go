@@ -246,14 +246,14 @@ func (c *container) Exec(pid string, spec specs.Process, s Stdio) (Process, erro
 	return p, nil
 }
 
-func (c *container) readSpec() (*specs.LinuxSpec, error) {
-	var spec specs.LinuxSpec
+func (c *container) readSpec() (*platformSpec, error) {
+	var spec platformSpec
 	f, err := os.Open(filepath.Join(c.bundle, "config.json"))
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
-	if err := json.NewDecoder(f).Decode(&spec); err != nil {
+	if err := json.NewDecoder(f).Decode(&spec.Spec); err != nil {
 		return nil, err
 	}
 	return &spec, nil

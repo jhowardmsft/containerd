@@ -2,12 +2,12 @@ package runtime
 
 import "github.com/opencontainers/specs"
 
-func getRootIDs(s *specs.LinuxSpec) (int, int, error) {
+func getRootIDs(s *platformSpec) (int, int, error) {
 	if s == nil {
 		return 0, 0, nil
 	}
 	var hasUserns bool
-	for _, ns := range s.Linux.Namespaces {
+	for _, ns := range s.Spec.Linux.Namespaces {
 		if ns.Type == specs.UserNamespace {
 			hasUserns = true
 			break
