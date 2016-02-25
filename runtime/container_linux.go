@@ -16,7 +16,7 @@ func getRootIDs(s *platformSpec) (int, int, error) {
 	if !hasUserns {
 		return 0, 0, nil
 	}
-	uid := hostIDFromMap(0, s.Linux.UIDMappings)
-	gid := hostIDFromMap(0, s.Linux.GIDMappings)
+	uid := hostIDFromMap(0, s.Spec.Linux.UIDMappings)
+	gid := hostIDFromMap(0, s.Spec.Linux.GIDMappings)
 	return uid, gid, nil
 }
