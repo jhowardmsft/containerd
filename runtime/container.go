@@ -195,8 +195,8 @@ func (c *container) Start(checkpoint string, s Stdio) (Process, error) {
 		id:          InitProcessID,
 		c:           c,
 		stdio:       s,
-		spec:        platformSpec.Spec.spec,
-		processSpec: platformSpec.Spec.spec.Process,
+		spec:        spec,
+		processSpec: spec.Process,
 	}
 	p, err := newProcess(config)
 	if err != nil {
