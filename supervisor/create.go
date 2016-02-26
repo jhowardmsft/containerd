@@ -6,18 +6,6 @@ import (
 	"github.com/docker/containerd/runtime"
 )
 
-type StartTask struct {
-	baseTask
-	ID            string
-	BundlePath    string
-	Stdout        string
-	Stderr        string
-	Stdin         string
-	StartResponse chan StartResponse
-	Checkpoint    *runtime.Checkpoint
-	Labels        []string
-}
-
 func (s *Supervisor) start(t *StartTask) error {
 	start := time.Now()
 	container, err := runtime.New(s.stateDir, t.ID, t.BundlePath, t.Labels)
@@ -36,9 +24,8 @@ func (s *Supervisor) start(t *StartTask) error {
 		Stdout:        t.Stdout,
 		Stderr:        t.Stderr,
 	}
-	if t.Checkpoint != nil {
-		task.Checkpoint = t.Checkpoint.Name
-	}
+	setTaskCheckpoint(t)
+
 	s.startTasks <- task
 	ContainerCreateTimer.UpdateSince(start)
 	return errDeferedResponse

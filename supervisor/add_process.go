@@ -4,19 +4,7 @@ import (
 	"time"
 
 	"github.com/docker/containerd/runtime"
-	"github.com/opencontainers/specs"
 )
-
-type AddProcessTask struct {
-	baseTask
-	ID            string
-	PID           string
-	Stdout        string
-	Stderr        string
-	Stdin         string
-	ProcessSpec   *specs.Process
-	StartResponse chan StartResponse
-}
 
 func (s *Supervisor) addProcess(t *AddProcessTask) error {
 	start := time.Now()
