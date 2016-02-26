@@ -4,5 +4,5 @@ package runtime
 // Windows support currently.
 import "github.com/docker/containerd/specs"
 
-type platformSpec specs.WindowsSpec
+type PlatformSpec specs.WindowsSpec
 type ProcessSpec specs.Process

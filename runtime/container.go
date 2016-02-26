@@ -168,8 +168,8 @@ func (c *container) Labels() []string {
 	return c.labels
 }
 
-func (c *container) readSpec() (*platformSpec, error) {
-	var spec platformSpec
+func (c *container) readSpec() (*PlatformSpec, error) {
+	var spec PlatformSpec
 	f, err := os.Open(filepath.Join(c.bundle, "config.json"))
 	if err != nil {
 		return nil, err

@@ -41,7 +41,7 @@ type processConfig struct {
 	id          string
 	root        string
 	processSpec ProcessSpec
-	spec        *platformSpec
+	spec        *PlatformSpec
 	c           *container
 	stdio       Stdio
 	exec        bool

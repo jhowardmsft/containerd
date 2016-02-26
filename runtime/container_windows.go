@@ -2,7 +2,7 @@ package runtime
 
 import "errors"
 
-func getRootIDs(s *platformSpec) (int, int, error) {
+func getRootIDs(s *PlatformSpec) (int, int, error) {
 	return 0, 0, nil
 }
 

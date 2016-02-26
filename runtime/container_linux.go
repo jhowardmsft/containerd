@@ -13,7 +13,7 @@ import (
 	"github.com/opencontainers/specs"
 )
 
-func getRootIDs(s *platformSpec) (int, int, error) {
+func getRootIDs(s *PlatformSpec) (int, int, error) {
 	if s == nil {
 		return 0, 0, nil
 	}
