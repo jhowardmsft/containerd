@@ -3,52 +3,12 @@ package runtime
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
-
-	"github.com/opencontainers/specs"
 )
-
-type Process interface {
-	io.Closer
-
-	// ID of the process.
-	// This is either "init" when it is the container's init process or
-	// it is a user provided id for the process similar to the container id
-	ID() string
-	CloseStdin() error
-	Resize(int, int) error
-	// ExitFD returns the fd the provides an event when the process exits
-	ExitFD() int
-	// ExitStatus returns the exit status of the process or an error if it
-	// has not exited
-	ExitStatus() (int, error)
-	// Spec returns the process spec that created the process
-	Spec() specs.Process
-	// Signal sends the provided signal to the process
-	Signal(os.Signal) error
-	// Container returns the container that the process belongs to
-	Container() Container
-	// Stdio of the container
-	Stdio() Stdio
-	// SystemPid is the pid on the system
-	SystemPid() int
-}
-
-type processConfig struct {
-	id          string
-	root        string
-	processSpec specs.Process
-	spec        *platformSpec
-	c           *container
-	stdio       Stdio
-	exec        bool
-	checkpoint  string
-}
 
 func newProcess(config *processConfig) (*process, error) {
 	p := &process{
@@ -67,16 +27,9 @@ func newProcess(config *processConfig) (*process, error) {
 		return nil, err
 	}
 	defer f.Close()
-	if err := json.NewEncoder(f).Encode(ProcessState{
-		Process:    config.processSpec,
-		Exec:       config.exec,
-		Checkpoint: config.checkpoint,
-		RootUID:    uid,
-		RootGID:    gid,
-		Stdin:      config.stdio.Stdin,
-		Stdout:     config.stdio.Stdout,
-		Stderr:     config.stdio.Stderr,
-	}); err != nil {
+
+	ps := populateProcessStateForEncoding(config, uid, gid)
+	if err := json.NewEncoder(f).Encode(ps); err != nil {
 		return nil, err
 	}
 	exit, err := getExitPipe(filepath.Join(config.root, ExitFile))
@@ -121,17 +74,6 @@ func loadProcess(root, id string, c *container, s *ProcessState) (*process, erro
 	return p, nil
 }
 
-type process struct {
-	root        string
-	id          string
-	pid         int
-	exitPipe    *os.File
-	controlPipe *os.File
-	container   *container
-	spec        specs.Process
-	stdio       Stdio
-}
-
 func (p *process) ID() string {
 	return p.id
 }
@@ -171,10 +113,6 @@ func (p *process) ExitStatus() (int, error) {
 		return -1, ErrProcessNotExited
 	}
 	return strconv.Atoi(string(data))
-}
-
-func (p *process) Spec() specs.Process {
-	return p.spec
 }
 
 func (p *process) Stdio() Stdio {
