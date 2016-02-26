@@ -1,5 +1,7 @@
 package supervisor
 
+import "github.com/docker/containerd/runtime"
+
 type StartTask struct {
 	baseTask
 	ID            string
@@ -12,7 +14,7 @@ type StartTask struct {
 	Labels        []string
 }
 
-func setTaskCheckpoint(t *StartTask) {
+func (task *startTask) setTaskCheckpoint(t *StartTask) {
 	if t.Checkpoint != nil {
 		task.Checkpoint = t.Checkpoint.Name
 	}

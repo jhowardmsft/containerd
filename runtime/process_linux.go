@@ -5,7 +5,7 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/docker/opencontainers/specs"
+	"github.com/opencontainers/specs"
 )
 
 type Process interface {
@@ -83,13 +83,15 @@ func (p *process) Spec() specs.Process {
 
 func populateProcessStateForEncoding(config *processConfig, uid int, gid int) ProcessState {
 	return ProcessState{
-		Process:    config.processSpec,
-		Exec:       config.exec,
-		Checkpoint: config.checkpoint,
-		RootUID:    uid,
-		RootGID:    gid,
-		Stdin:      config.stdio.Stdin,
-		Stdout:     config.stdio.Stdout,
-		Stderr:     config.stdio.Stderr,
+		Process: config.processSpec,
+		Exec:    config.exec,
+		PlatformProcessState: PlatformProcessState{
+			Checkpoint: config.checkpoint,
+			RootUID:    uid,
+			RootGID:    gid,
+		},
+		Stdin:  config.stdio.Stdin,
+		Stdout: config.stdio.Stdout,
+		Stderr: config.stdio.Stderr,
 	}
 }

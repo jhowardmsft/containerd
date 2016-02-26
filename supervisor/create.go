@@ -24,7 +24,7 @@ func (s *Supervisor) start(t *StartTask) error {
 		Stdout:        t.Stdout,
 		Stderr:        t.Stderr,
 	}
-	setTaskCheckpoint(t)
+	task.setTaskCheckpoint(t)
 
 	s.startTasks <- task
 	ContainerCreateTimer.UpdateSince(start)

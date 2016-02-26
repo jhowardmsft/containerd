@@ -1,6 +1,10 @@
 package runtime
 
-import "github.com/opencontainers/specs"
+import (
+	"time"
+
+	"github.com/opencontainers/specs"
+)
 
 type Checkpoint struct {
 	// Timestamp is the time that checkpoint happened
@@ -26,10 +30,9 @@ type PlatformProcessState struct {
 
 type ProcessState struct {
 	specs.Process
+	PlatformProcessState
 	Exec   bool   `json:"exec"`
 	Stdin  string `json:"containerdStdin"`
 	Stdout string `json:"containerdStdout"`
 	Stderr string `json:"containerdStderr"`
-
-	PlatformProcessState
 }

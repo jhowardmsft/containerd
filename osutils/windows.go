@@ -1,3 +1,5 @@
+// +build windows
+
 package osutils
 
 // GetOpenFds returns the number of open fds for the process provided by pid

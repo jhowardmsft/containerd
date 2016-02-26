@@ -12,5 +12,5 @@ type StartTask struct {
 }
 
 // Checkpoint not supported on Windows
-func setTaskCheckpoint(t *StartTask) {
+func (task *startTask) setTaskCheckpoint(t *StartTask) {
 }
