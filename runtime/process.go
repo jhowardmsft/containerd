@@ -26,7 +26,7 @@ type Process interface {
 	// has not exited
 	ExitStatus() (int, error)
 	// Spec returns the process spec that created the process
-	Spec() processSpec
+	Spec() ProcessSpec
 	// Signal sends the provided signal to the process
 	Signal(os.Signal) error
 	// Container returns the container that the process belongs to
@@ -40,7 +40,7 @@ type Process interface {
 type processConfig struct {
 	id          string
 	root        string
-	processSpec processSpec
+	processSpec ProcessSpec
 	spec        *platformSpec
 	c           *container
 	stdio       Stdio
@@ -88,7 +88,7 @@ func loadProcess(root, id string, c *container, s *ProcessState) (*process, erro
 		root:      root,
 		id:        id,
 		container: c,
-		spec:      s.processSpec,
+		spec:      s.ProcessSpec,
 		stdio: Stdio{
 			Stdin:  s.Stdin,
 			Stdout: s.Stdout,
@@ -119,7 +119,7 @@ type process struct {
 	exitPipe    *os.File
 	controlPipe *os.File
 	container   *container
-	spec        processSpec
+	spec        ProcessSpec
 	stdio       Stdio
 }
 
@@ -164,7 +164,7 @@ func (p *process) ExitStatus() (int, error) {
 	return strconv.Atoi(string(data))
 }
 
-func (p *process) Spec() processSpec {
+func (p *process) Spec() ProcessSpec {
 	return p.spec
 }
 

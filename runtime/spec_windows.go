@@ -5,4 +5,4 @@ package runtime
 import "github.com/docker/containerd/specs"
 
 type platformSpec specs.WindowsSpec
-type processSpec specs.Process
+type ProcessSpec specs.Process

@@ -42,7 +42,7 @@ type state struct {
 }
 
 type ProcessState struct {
-	processSpec
+	ProcessSpec
 	Exec   bool   `json:"exec"`
 	Stdin  string `json:"containerdStdin"`
 	Stdout string `json:"containerdStdout"`

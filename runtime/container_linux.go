@@ -132,7 +132,7 @@ func (c *container) Start(checkpoint string, s Stdio) (Process, error) {
 		c:           c,
 		stdio:       s,
 		spec:        spec,
-		processSpec: processSpec(spec.Process),
+		processSpec: ProcessSpec(spec.Process),
 	}
 	p, err := newProcess(config)
 	if err != nil {
@@ -148,7 +148,7 @@ func (c *container) Start(checkpoint string, s Stdio) (Process, error) {
 	return p, nil
 }
 
-func (c *container) Exec(pid string, spec processSpec, s Stdio) (Process, error) {
+func (c *container) Exec(pid string, spec ProcessSpec, s Stdio) (Process, error) {
 	processRoot := filepath.Join(c.root, c.id, pid)
 	if err := os.Mkdir(processRoot, 0755); err != nil {
 		return nil, err

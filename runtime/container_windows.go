@@ -34,7 +34,7 @@ func (c *container) Start(checkpoint string, s Stdio) (Process, error) {
 
 // TODO Windows: Implement me.
 // This will have a very different implementation on Windows.
-func (c *container) Exec(pid string, spec processSpec, s Stdio) (Process, error) {
+func (c *container) Exec(pid string, spec ProcessSpec, s Stdio) (Process, error) {
 	return nil, errors.New("Exec not yet implemented on Windows")
 }
 

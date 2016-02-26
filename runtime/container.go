@@ -17,7 +17,7 @@ type Container interface {
 	// Start starts the init process of the container
 	Start(checkpoint string, s Stdio) (Process, error)
 	// Exec starts another process in an existing container
-	Exec(string, processSpec, Stdio) (Process, error)
+	Exec(string, ProcessSpec, Stdio) (Process, error)
 	// Delete removes the container's state and any resources
 	Delete() error
 	// Processes returns all the containers processes that have been added

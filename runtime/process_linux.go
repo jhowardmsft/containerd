@@ -28,7 +28,7 @@ func (p *process) Signal(s os.Signal) error {
 
 func populateProcessStateForEncoding(config *processConfig, uid int, gid int) ProcessState {
 	return ProcessState{
-		processSpec: config.processSpec,
+		ProcessSpec: config.processSpec,
 		Exec:        config.exec,
 		PlatformProcessState: PlatformProcessState{
 			Checkpoint: config.checkpoint,
