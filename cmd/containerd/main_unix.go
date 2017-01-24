@@ -20,7 +20,11 @@ import (
 	"github.com/urfave/cli"
 )
 
-const listenerFlag = "socket"
+const (
+	listenerFlag   = "socket"
+	defaultRuntime = "shim"
+	defaultRoot    = "/run/containerd"
+)
 
 func appendPlatformFlags(flags []cli.Flag) []cli.Flag {
 	return append(flags, cli.StringFlag{

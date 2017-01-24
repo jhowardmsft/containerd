@@ -47,12 +47,12 @@ high performance container runtime
 		cli.StringFlag{
 			Name:  "root",
 			Usage: "containerd state directory",
-			Value: "/run/containerd",
+			Value: defaultRoot,
 		},
 		cli.StringFlag{
 			Name:  "runtime",
 			Usage: "runtime for execution",
-			Value: "shim",
+			Value: defaultRuntime,
 		},
 		cli.StringFlag{
 			Name:  "metrics-address, m",
