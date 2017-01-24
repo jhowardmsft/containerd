@@ -87,7 +87,7 @@ high performance container runtime
 		}
 		defer s.Shutdown()
 
-		path := context.GlobalString("socket")
+		path := context.GlobalString(listenerFlag)
 		l, err := createListener(path)
 		if err != nil {
 			return err

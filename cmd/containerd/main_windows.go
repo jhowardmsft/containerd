@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"os"
 	"os/signal"
@@ -9,12 +10,20 @@ import (
 
 	"google.golang.org/grpc"
 
+	"github.com/Microsoft/go-winio"
 	"github.com/Sirupsen/logrus"
 	"github.com/docker/containerd/execution"
 	"github.com/urfave/cli"
 )
 
+const listenerFlag = "pipe"
+
 func appendPlatformFlags(flags []cli.Flag) []cli.Flag {
+	return append(flags, cli.StringFlag{
+		Name:  "pipe, p",
+		Usage: "named pipe for containerd's GRPC server",
+		Value: "//./pipe/containerd",
+	})
 	return flags
 }
 
@@ -37,7 +46,19 @@ func handleSignals(signals chan os.Signal, server *grpc.Server) {
 		}
 	}
 }
+
 func createListener(path string) (net.Listener, error) {
-	// TODO
-	return nil, nil
+	// allow Administrators and SYSTEM
+	sddl := "D:P(A;;GA;;;BA)(A;;GA;;;SY)"
+	c := winio.PipeConfig{
+		SecurityDescriptor: sddl,
+		MessageMode:        true,  // Use message mode so that CloseWrite() is supported
+		InputBufferSize:    65536, // Use 64KB buffers to improve performance
+		OutputBufferSize:   65536,
+	}
+	l, err := winio.ListenPipe(path, &c)
+	if err != nil {
+		return nil, fmt.Errorf("failed to listen on named pipe %q: %s. Is this process elevated?", path, err)
+	}
+	return l, nil
 }

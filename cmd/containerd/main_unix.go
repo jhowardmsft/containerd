@@ -20,6 +20,8 @@ import (
 	"github.com/urfave/cli"
 )
 
+const listenerFlag = "socket"
+
 func appendPlatformFlags(flags []cli.Flag) []cli.Flag {
 	return append(flags, cli.StringFlag{
 		Name:  "socket, s",
