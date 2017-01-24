@@ -14,6 +14,8 @@ import (
 	"github.com/Microsoft/go-winio"
 	"github.com/Sirupsen/logrus"
 	"github.com/docker/containerd/execution"
+	"github.com/docker/containerd/execution/executors/windows"
+	"github.com/docker/containerd/log"
 	"github.com/urfave/cli"
 )
 
@@ -34,8 +36,20 @@ func appendPlatformFlags(flags []cli.Flag) []cli.Flag {
 }
 
 func processRuntime(ctx context.Context, runtime string, root string) (execution.Executor, error) {
-	// TODO
-	return nil, nil
+	var (
+		err      error
+		executor execution.Executor
+	)
+	switch runtime {
+	case "windows":
+		executor, err = windows.New(log.WithModule(ctx, "windows"), root, "", "", nil)
+		if err != nil {
+			return nil, err
+		}
+		return executor, nil
+	default:
+		return nil, fmt.Errorf("runtime %q not implemented", runtime)
+	}
 }
 
 func setupSignals(signals chan os.Signal) {
