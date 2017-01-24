@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
 	"google.golang.org/grpc"
@@ -16,7 +17,12 @@ import (
 	"github.com/urfave/cli"
 )
 
-const listenerFlag = "pipe"
+const (
+	listenerFlag   = "pipe"
+	defaultRuntime = "windows"
+)
+
+var defaultRoot = filepath.Join(os.Getenv("PROGRAMDATA"), "containerd")
 
 func appendPlatformFlags(flags []cli.Flag) []cli.Flag {
 	return append(flags, cli.StringFlag{
