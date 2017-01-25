@@ -21,9 +21,10 @@ import (
 )
 
 const (
-	listenerFlag   = "socket"
-	defaultRuntime = "shim"
-	defaultRoot    = "/run/containerd"
+	listenerFlag         = "socket"
+	defaultRuntime       = "shim"
+	defaultRoot          = "/run/containerd"
+	numberSignalChannels = 2048
 )
 
 func appendPlatformFlags(flags []cli.Flag) []cli.Flag {
@@ -56,8 +57,9 @@ func processRuntime(ctx context.Context, runtime string, root string) (execution
 	}
 }
 
-func setupSignals(signals chan os.Signal) {
+func setupSignals(signals chan os.Signal) error {
 	signal.Notify(signals, syscall.SIGTERM, syscall.SIGINT, syscall.SIGUSR1)
+	return nil
 }
 
 func handleSignals(signals chan os.Signal, server *grpc.Server) {

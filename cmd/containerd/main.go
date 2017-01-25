@@ -74,8 +74,10 @@ high performance container runtime
 		return nil
 	}
 	app.Action = func(context *cli.Context) error {
-		signals := make(chan os.Signal, 2048)
-		setupSignals(signals)
+		signals := make(chan os.Signal, numberSignalChannels)
+		if err := setupSignals(signals); err != nil {
+			return err
+		}
 
 		if address := context.GlobalString("metrics-address"); address != "" {
 			go serveMetrics(address)
