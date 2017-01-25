@@ -27,7 +27,7 @@ const (
 	numberSignalChannels = 2
 )
 
-var defaultRoot = filepath.Join(os.Getenv("PROGRAMDATA"), "containerd")
+var defaultRoot = filepath.Join(os.Getenv("ProgramFiles"), "containerd")
 
 func appendPlatformFlags(flags []cli.Flag) []cli.Flag {
 	return append(flags, cli.StringFlag{
@@ -45,6 +45,12 @@ func processRuntime(ctx context.Context, runtime string, root string) (execution
 	)
 	switch runtime {
 	case "windows":
+		// Explicit ACL to LocalSystem/Administrators.
+		root := filepath.Join(root, "windows")
+		err = system.MkdirAllWithACL(root, 0)
+		if err != nil && !os.IsExist(err) {
+			return nil, err
+		}
 		executor, err = windows.New(log.WithModule(ctx, "windows"), root, "", "", nil)
 		if err != nil {
 			return nil, err
