@@ -15,8 +15,10 @@ INTEGRATION_PACKAGE=${PROJECT_ROOT}/integration
 SNAPSHOT_PACKAGES=$(shell go list ./snapshot/...)
 
 # Project binaries.
-COMMANDS=ctr containerd containerd-shim protoc-gen-gogoctrd dist
-BINARIES=$(addprefix bin/,$(COMMANDS))
+UNIXCOMMANDS=ctr containerd containerd-shim protoc-gen-gogoctrd dist
+WINDOWSCOMMANDS=containerd.exe
+UNIXBINARIES=$(addprefix bin/,$(UNIXCOMMANDS))
+WINDOWSBINARIES=$(addprefix bin/,$(WINDOWSCOMMANDS))
 
 # TODO(stevvooe): This will set version from git tag, but overrides major,
 # minor, patch in the actual file. We'll have to resolve this before release
@@ -29,11 +31,11 @@ TESTFLAGS ?=-parallel 8 -race
 .PHONY: clean all AUTHORS fmt vet lint build binaries test integration setup generate checkprotos coverage ci check help install uninstall vendor
 .DEFAULT: default
 
-all: binaries
+all: binaries windowsbinaries
 
 check: fmt vet lint ineffassign ## run fmt, vet, lint, ineffassign
 
-ci: check binaries checkprotos coverage coverage-integration ## to be used by the CI
+ci: check binaries windowsbinaries checkprotos coverage coverage-integration ## to be used by the CI
 
 AUTHORS: .mailmap .git/HEAD
 	git log --format='%aN <%aE>' | sort -fu > $@
@@ -57,7 +59,7 @@ checkprotos: generate ## check if protobufs needs to be generated again
 
 # Depends on binaries because vet will silently fail if it can't load compiled
 # imports
-vet: binaries ## run go vet
+vet: binaries windowsbinaries ## run go vet
 	@echo "🐳 $@"
 	@test -z "$$(go vet ${PACKAGES} 2>&1 | grep -v 'constant [0-9]* not a string in call to Errorf' | egrep -v '(timestamp_test.go|duration_test.go|exit status 1)' | tee /dev/stderr)"
 
@@ -102,28 +104,40 @@ integration: ## run integration tests
 
 FORCE:
 
+# Build a Windows binary from a cmd.
+bin/%.exe: cmd/% FORCE
+	@test $$(go list) = "${PROJECT_ROOT}" || \
+		(echo "👹 Please correctly set up your Go build environment. This project must be located at <GOPATH>/src/${PROJECT_ROOT}" && false)
+	@echo "🐳 $@"
+	@export GOOS="windows";go build -i -o $@ ${GO_LDFLAGS}  ${GO_GCFLAGS} ./$<
+
 # Build a binary from a cmd.
 bin/%: cmd/% FORCE
 	@test $$(go list) = "${PROJECT_ROOT}" || \
 		(echo "👹 Please correctly set up your Go build environment. This project must be located at <GOPATH>/src/${PROJECT_ROOT}" && false)
 	@echo "🐳 $@"
-	@go build -i -o $@ ${GO_LDFLAGS}  ${GO_GCFLAGS} ./$<
+	@if [ $$(go env GOHOSTOS) = "windows" ]; then export GOOS="linux"; fi; \
+	 go build -i -o $@ ${GO_LDFLAGS}  ${GO_GCFLAGS} ./$<
 
-binaries: $(BINARIES) ## build binaries
+binaries: $(UNIXBINARIES) ## build Unix binaries
+	@echo "🐳 $@"
+
+windowsbinaries: $(WINDOWSBINARIES) ## build Windows binaries
 	@echo "🐳 $@"
 
 clean: ## clean up binaries
 	@echo "🐳 $@"
-	@rm -f $(BINARIES)
+	@rm -f $(UNIXBINARIES)
+	@rm -f $(WINDOWSBINARIES)
 
 install: ## install binaries
-	@echo "🐳 $@ $(BINARIES)"
+	@echo "🐳 $@ $(UNIXBINARIES)"
 	@mkdir -p $(DESTDIR)/bin
-	@install $(BINARIES) $(DESTDIR)/bin
+	@install $(UNIXBINARIES) $(DESTDIR)/bin
 
 uninstall:
 	@echo "🐳 $@"
-	@rm -f $(addprefix $(DESTDIR)/bin/,$(notdir $(BINARIES)))
+	@rm -f $(addprefix $(DESTDIR)/bin/,$(notdir $(UNIXBINARIES)))
 
 
 coverage: ## generate coverprofiles from the unit tests, except tests that require root
