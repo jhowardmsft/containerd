@@ -87,12 +87,10 @@ func main() {
 		// we don't miss any signals during boot
 		signals := make(chan os.Signal, 2048)
 		signal.Notify(signals, syscall.SIGTERM, syscall.SIGINT, syscall.SIGUSR1, syscall.SIGCHLD)
-		if conf.Subreaper {
-			log.G(global).Info("setting subreaper...")
-			if err := sys.SetSubreaper(1); err != nil {
-				return err
-			}
+		if err := configureReaper(); err != nil {
+			return err
 		}
+
 		log.G(global).Info("starting containerd boot...")
 
 		// load all plugins into containerd
@@ -401,20 +399,4 @@ func interceptor(ctx gocontext.Context,
 		fmt.Printf("unknown GRPC server type: %#v\n", info.Server)
 	}
 	return grpc_prometheus.UnaryServerInterceptor(ctx, req, info, handler)
-}
-
-func handleSignals(signals chan os.Signal, server *grpc.Server) error {
-	for s := range signals {
-		log.G(global).WithField("signal", s).Debug("received signal")
-		switch s {
-		case syscall.SIGCHLD:
-			if err := reaper.Reap(); err != nil {
-				log.G(global).WithError(err).Error("reap containerd processes")
-			}
-		default:
-			server.Stop()
-			return nil
-		}
-	}
-	return nil
 }
