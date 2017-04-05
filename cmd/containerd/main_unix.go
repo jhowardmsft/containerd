@@ -1,8 +1,10 @@
 package main
 
 import (
-	"os/signal"
+	"os"
 	"syscall"
+
+	"google.golang.org/grpc"
 
 	"github.com/containerd/containerd/log"
 	"github.com/containerd/containerd/reaper"
@@ -32,4 +34,5 @@ func configureReaper() error {
 			return err
 		}
 	}
+	return nil
 }

@@ -23,7 +23,6 @@ import (
 	"github.com/containerd/containerd/content"
 	"github.com/containerd/containerd/log"
 	"github.com/containerd/containerd/plugin"
-	"github.com/containerd/containerd/reaper"
 	"github.com/containerd/containerd/snapshot"
 	"github.com/containerd/containerd/sys"
 	metrics "github.com/docker/go-metrics"
