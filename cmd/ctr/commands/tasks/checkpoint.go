@@ -18,7 +18,6 @@ package tasks
 
 import (
 	"fmt"
-	"runtime"
 
 	"github.com/containerd/containerd"
 	"github.com/containerd/containerd/cmd/ctr/commands"
@@ -40,7 +39,7 @@ var checkpointCommand = cli.Command{
 		cli.StringFlag{
 			Name:  "runtime",
 			Usage: "runtime name",
-			Value: fmt.Sprintf("io.containerd.runtime.v1.%s", runtime.GOOS),
+			Value: defaultRuntime,
 		},
 	},
 	Action: func(context *cli.Context) error {

@@ -1,4 +1,4 @@
-// +build !windows
+// +build windows
 
 /*
    Copyright The containerd Authors.
@@ -16,23 +16,6 @@
    limitations under the License.
 */
 
-package commands
+package tasks
 
-import (
-	"fmt"
-	"runtime"
-
-	"github.com/urfave/cli"
-)
-
-var defaultRuntime = fmt.Sprintf("io.containerd.runtime.v1.%s", runtime.GOOS)
-
-func init() {
-	ContainerFlags = append(ContainerFlags, cli.BoolFlag{
-		Name:  "rootfs",
-		Usage: "use custom rootfs that is not managed by containerd snapshotter",
-	}, cli.BoolFlag{
-		Name:  "no-pivot",
-		Usage: "disable use of pivot-root (linux only)",
-	})
-}
+var defaultRuntime = "io.containerd.runhcs.v1"
