@@ -29,6 +29,7 @@ import (
 	"github.com/containerd/containerd/log"
 	runc "github.com/containerd/go-runc"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -58,10 +59,13 @@ func newPipeSet(ctx context.Context, stdin, stdout, stderr string, terminal bool
 			return nil
 		}
 		dialTimeout := 3 * time.Second
+		log.G(ctx).WithFields(logrus.Fields{"name": name}).Info("dialing")
 		c, err := winio.DialPipe(name, &dialTimeout)
 		if err != nil {
+			log.G(ctx).WithFields(logrus.Fields{"name": name}).WithError(err).Error("failed to connect")
 			return errors.Wrapf(err, "failed to connect to %s", name)
 		}
+		log.G(ctx).WithFields(logrus.Fields{"name": name}).Info("connected")
 		*conn = c
 		return nil
 	}
@@ -145,7 +149,7 @@ func (pr *pipeRelay) wait() {
 // closeIO closes stdin to unblock an waiters
 func (pr *pipeRelay) closeIO() {
 	if pr.ps.stdin != nil {
-		pr.ps.Close()
+		pr.ps.stdin.Close()
 		pr.io.Stdin().Close()
 	}
 }

@@ -337,6 +337,12 @@ func (s *service) State(ctx context.Context, r *taskAPI.StateRequest) (*taskAPI.
 }
 
 func writeMountsToConfig(bundle string, mounts []*containerd_types.Mount) error {
+	// JJH HACK:
+	if len(mounts) == 0 {
+		// Assume it has already been done
+		return nil
+	}
+
 	if len(mounts) != 1 {
 		return errors.New("Rootfs does not contain exactly 1 mount for the root file system")
 	}
@@ -406,7 +412,7 @@ func writeMountsToConfig(bundle string, mounts []*containerd_types.Mount) error 
 
 // Create a new initial process and container with runhcs
 func (s *service) Create(ctx context.Context, r *taskAPI.CreateTaskRequest) (*taskAPI.CreateTaskResponse, error) {
-	log.G(ctx).Debugf("Create: %s", r.ID)
+	log.G(ctx).Debugf("Create: %s stdin:%s stdout:%s stderr:%s terminal %t", r.ID, r.Stdin, r.Stdout, r.Stderr, r.Terminal)
 
 	// Hold the lock for the entire duration to avoid duplicate process creation.
 	s.mu.Lock()
