@@ -27,6 +27,7 @@ import (
 	winio "github.com/Microsoft/go-winio"
 	"github.com/containerd/containerd/namespaces"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 const shimBinaryFormat = "containerd-shim-%s-%s.exe"
@@ -66,6 +67,9 @@ func AnonDialer(address string, timeout time.Duration) (net.Conn, error) {
 			break
 		}
 		if !os.IsNotExist(lastError) {
+			logrus.Debugf("HALTING!!!!! GET STACKS OUT OF SHIM", lastError)
+			time.Sleep(2400 * time.Hour)
+
 			break
 		}
 		// There is nobody serving the pipe. We limit the timeout for this case
